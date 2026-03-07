@@ -16,8 +16,6 @@ def home():
 if __name__ == '__main__':
     # Перед первым запуском создаём таблицы (только один раз!)
     with app.app_context():
-        print("Таблицы созданы. Пример запроса:")
-        print(Task.query.all())  # Должно вывести []
         db.create_all()
 
     app.run(debug=True)
