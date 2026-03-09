@@ -1,6 +1,7 @@
 from flask import Flask, render_template
 from flask_sqlalchemy import SQLAlchemy
 import calendar
+from extensions import db
 from models import Task, DiaryEntry
 
 app = Flask(__name__)
@@ -9,7 +10,8 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
 # Отключаем отслеживание изменений объектов (экономит ресурсы, не нужно на старте)
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-db = SQLAlchemy(app)
+db.init_app(app)
+
 # Функция генерирует HTML-календарь для указанного года и месяца
 def generate_calendat_html(year=2026, month=3):
     cal = calendar.monthcalendar(year, month)
@@ -56,8 +58,8 @@ def day_detail(date):
         date=date,
         tasks=tasks)
 
+
 if __name__ == '__main__':
-    # Перед первым запуском создаём таблицы (только один раз!)
     with app.app_context():
         db.create_all()
 
