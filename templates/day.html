@@ -80,6 +80,21 @@
 
         <h1>{{ date }}</h1>
 
+        <div class="add-task-section" style="margin: 30px 0;">
+            <h3>Добавить задачу</h3>
+            <form method="POST" action="">
+                <input type="text"
+                       name="text"
+                       placeholder="Например: Купить продукты"
+                       required
+                       style="width: 70%; padding: 10px; font-size: 1em;">
+                <button type="submit"
+                        style="padding: 10px 20px; background: #3498db; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                    Добавить
+                </button>
+            </form>
+        </div>
+
         <div class="tasks-section">
             <h2>Задачи на день</h2>
 

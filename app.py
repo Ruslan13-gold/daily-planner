@@ -1,4 +1,4 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, request, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
 import calendar
 from extensions import db
@@ -47,16 +47,34 @@ def home():
     return render_template('index.html', calendar_html=calendar_html)
 
 # Маршрут страницы конкретного дня
-@app.route('/day/<date>')
+@app.route('/day/<date>', methods=['GET', 'POST'])
 def day_detail(date):
-    # Запрашиваем все задачи для этой даты
-    tasks= Task.query.filter(Task.date == date).all()
+    if request.method == 'POST':
+        # Получаем текст из формы
+        task_text = request.form.get('text', '').strip()
 
-    # date приходит как строка '2026-03-05'
+        if task_text: # проверяем, что не пустая строка
+            new_task = Task(
+                date=date,
+                text=task_text.strip(),
+                done = False
+            )
+            db.session.add(new_task)
+            db.session.commit()
+            # После сохранения — редирект на ту же страницу (чтобы избежать повторной отправки формы)
+            return redirect(url_for('day_detail', date=date))
+        else:
+            # Можно добавить flash-сообщение об ошибке (позже)
+            print("Попытка добавить пустую задачу — игнорируем")
+
+    # GET-запрос или после редиректа — показываем страницу
+    tasks = Task.query.filter_by(date=date).all()
     return render_template(
         'day.html',
-        date=date,
-        tasks=tasks)
+        tasks=tasks,
+        date=date
+    )
+
 
 
 if __name__ == '__main__':
