@@ -43,6 +43,12 @@ def home():
     calendar_html = generate_calendat_html(2026, 3)
     return render_template('index.html', calendar_html=calendar_html)
 
+# Маршрут страницы конкретного дня
+@app.route('/day/<date>')
+def day_detail(date):
+    # date приходит как строка '2026-03-05'
+    return render_template('day.html', date=date)
+
 if __name__ == '__main__':
     # Перед первым запуском создаём таблицы (только один раз!)
     with app.app_context():
