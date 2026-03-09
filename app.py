@@ -1,6 +1,7 @@
 from flask import Flask, render_template
 from flask_sqlalchemy import SQLAlchemy
 import calendar
+from models import Task, DiaryEntry
 
 app = Flask(__name__)
 # Настраиваем базу данных SQLite (файл будет в корне проекта)
@@ -46,8 +47,14 @@ def home():
 # Маршрут страницы конкретного дня
 @app.route('/day/<date>')
 def day_detail(date):
+    # Запрашиваем все задачи для этой даты
+    tasks= Task.query.filter(Task.date == date).all()
+
     # date приходит как строка '2026-03-05'
-    return render_template('day.html', date=date)
+    return render_template(
+        'day.html',
+        date=date,
+        tasks=tasks)
 
 if __name__ == '__main__':
     # Перед первым запуском создаём таблицы (только один раз!)

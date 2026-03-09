@@ -36,6 +36,41 @@
         .back-link:hover {
             text-decoration: underline;
         }
+        .tasks-section {
+            margin-top: 40px;
+        }
+        .tasks-section h2 {
+            color: #34495e;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+        }
+        .task-list {
+            list-style: none;
+            padding: 0;
+        }
+        .task-item {
+            background: #f9fbfc;
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            border-radius: 6px;
+            border-left: 4px solid #3498db;
+            display: flex;
+            align-items: center;
+        }
+        .task-text {
+            flex: 1;
+            margin-left: 10px;
+        }
+        .task-done {
+            color: #95a5a6;
+            text-decoration: line-through;
+        }
+        .no-tasks {
+            color: #7f8c8d;
+            font-style: italic;
+            text-align: center;
+            padding: 20px;
+        }
     </style>
 </head>
 <body>
@@ -45,10 +80,27 @@
 
         <h1>{{ date }}</h1>
 
-        <p>Это страница дня {{ date }}. Пока здесь пусто — скоро добавим задачи и дневник.</p>
+        <div class="tasks-section">
+            <h2>Задачи на день</h2>
 
-        <p style="color: #6c757d; font-style: italic;">
-            Следующий шаг: список задач и блок для заметок
+            {% if tasks %}
+                <ul class="task-list">
+                    {% for task in tasks %}
+                        <li class="task-item">
+                            <span>[{% if task.done %}✓{% else %}○{% endif %}]</span>
+                            <span class="task-text {% if task.done %}task-done{% endif %}">
+                                {{ task.text }}
+                            </span>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="no-tasks">На этот день задач пока нет. Добавьте первую!</p>
+            {% endif %}
+        </div>
+
+        <p style="color: #6c757d; font-style: italic; margin-top: 40px;">
+            Скоро здесь появится форма добавления задач и блок дневника
         </p>
     </div>
 
