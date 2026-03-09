@@ -4,21 +4,68 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ежедневник</title>
+
+    <!-- Временные стили для календаря -->
     <style>
         body {
             font-family: Arial, sans-serif;
-            text-align: center;
-            padding: 50px;
+            margin: 0;
+            padding: 20px;
             background-color: #f8f9fa;
+            color: #333;
+            text-align: center;
         }
-        h1 {
-            color: #2c3e50;
+        h1 { color: #2c3e50; }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+        }
+
+        /* Стили календаря */
+        .calendar {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 1.1em;
+        }
+        .calendar th, .calendar td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: center;
+        }
+        .calendar th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+        .calendar td a {
+            text-decoration: none;
+            color: #333;
+            display: block;
+            padding: 10px;
+        }
+        .calendar td a:hover {
+            background-color: #e0f7fa;
+            border-radius: 50%;
+        }
+        .calendar td.empty {
+            background-color: #f9f9f9;
         }
     </style>
 </head>
 <body>
-    <h1>Добро пожаловать в Ежедневник!</h1>
-    <p>Это твой планировщик дел на Python + Flask. Пока просто тестовая страница.</p>
-    <p>Сегодня: 6 марта 2026</p>
+
+    <div class="container">
+        <h1>Ежедневник</h1>
+        <p>Выберите день, чтобы добавить задачи или записать мысли</p>
+
+        <!-- Здесь будет вставлен календарь из Python -->
+        {{ calendar_html | safe }}
+        <!-- | safe — важно! позволяет Flask вставить чистый HTML без экранирования -->
+    </div>
+
 </body>
 </html>
