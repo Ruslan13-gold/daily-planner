@@ -136,6 +136,59 @@
         }
     </style>
 </head>
+
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const checkboxes = document.querySelectorAll('.checkbox');
+
+    checkboxes.forEach(checkbox => {
+        checkbox.addEventListener('click', function () {
+            const taskItem = this.closest('.task-item');
+            const taskId = taskItem.dataset.taskId;
+
+            if (!taskId) {
+                console.error('Не найден task-id');
+                return;
+            }
+
+            // Отправляем запрос на сервер
+            fetch(`/toggle/${taskId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({}) // можно передать дополнительные данные, если нужно
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    // Меняем визуальное состояние
+                    const isDone = data.done;
+
+                    this.classList.toggle('checked', isDone);
+                    this.textContent = isDone ? '✓' : '○';
+
+                    taskItem.classList.toggle('done', isDone);
+                } else {
+                    alert('Не удалось обновить задачу');
+                }
+            })
+            .catch(err => {
+                console.error('Ошибка при отметке задачи:', err);
+                alert('Ошибка соединения с сервером');
+            });
+        });
+    });
+});
+</script>
+
+
 <body>
 
     <div class="container">
@@ -164,15 +217,14 @@
             {% if tasks %}
                 <ul class="task-list">
                     {% for task in tasks %}
-                        <li class="task-item {% if task.done %}done{% endif %}">
-                            <!-- Кликабельный чекбокс через скрытую форму -->
-                            <form method="POST" action="{{ url_for('toggle_task', task_id=task.id) }}" style="display: inline;">
-                                <button type="submit" class="checkbox-btn">
-                                    <span class="checkbox {% if task.done %}checked{% endif %}">
-                                        {% if task.done %}✓{% else %}○{% endif %}
-                                    </span>
-                                </button>
-                            </form>
+                        <li class="task-item {% if task.done %}done{% endif %}"
+                            data-task-id="{{ task.id }}">
+
+                            <!-- Чекбокс теперь просто span, кликабельный через JS -->
+                            <span class="checkbox {% if task.done %}checked{% endif %}"
+                                  title="Кликни, чтобы отметить / снять">
+                                {% if task.done %}✓{% else %}○{% endif %}
+                            </span>
 
                             <span class="task-text">
                                 {{ task.text }}

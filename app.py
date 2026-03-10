@@ -75,7 +75,7 @@ def day_detail(date):
         date=date
     )
 
-@app.route('/toggle_task/<int:task_id>', methods = ['POST'])
+@app.route('/toggle/<int:task_id>', methods = ['POST'])
 def toggle_task(task_id):
     """
     Переключает статус задачи (выполнена / не выполнена).
@@ -84,12 +84,16 @@ def toggle_task(task_id):
     # Находим задачу по ID или возвращаем 404, если не найдена
     task = Task.query.get_or_404(task_id)
 
-    #Инвертируем значение done
     task.done = not task.done
 
     db.session.commit()
 
-    return redirect(url_for('day_detail', date=task.date))
+    # Возвращаем JSON-ответ для фронтенда
+    return {
+        'success': True,
+        'task_id': task.id,
+        'done': task.done
+    }, 200
 
 if __name__ == '__main__':
     with app.app_context():
