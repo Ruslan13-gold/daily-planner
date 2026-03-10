@@ -71,6 +71,69 @@
             text-align: center;
             padding: 20px;
         }
+
+
+        .task-list {
+            list-style: none;
+            padding: 0;
+            margin: 20px 0;
+        }
+
+        .task-item {
+            background: #f9fcff;
+            padding: 14px 16px;
+            margin-bottom: 12px;
+            border-radius: 8px;
+            border-left: 5px solid #3498db;
+            display: flex;
+            align-items: center;
+            transition: all 0.18s ease;
+        }
+
+        .task-item:hover {
+            background: #eef7ff;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            transform: translateX(4px);
+        }
+
+        .checkbox-btn {
+            background: none;
+            border: none;
+            padding: 0;
+            margin-right: 14px;
+            cursor: pointer;
+        }
+
+        .checkbox {
+            display: inline-block;
+            width: 28px;
+            height: 28px;
+            border: 2.5px solid #3498db;
+            border-radius: 50%;
+            font-size: 20px;
+            line-height: 23px;
+            text-align: center;
+            color: #3498db;
+            background: white;
+            transition: all 0.25s ease;
+        }
+
+        .checkbox.checked {
+            background: #3498db;
+            color: white;
+            border-color: #2980b9;
+        }
+
+        .task-text {
+            flex: 1;
+            font-size: 1.08em;
+        }
+
+        .task-item.done .task-text {
+            text-decoration: line-through;
+            color: #7f8c8d;
+            opacity: 0.85;
+        }
     </style>
 </head>
 <body>
@@ -101,9 +164,17 @@
             {% if tasks %}
                 <ul class="task-list">
                     {% for task in tasks %}
-                        <li class="task-item">
-                            <span>[{% if task.done %}✓{% else %}○{% endif %}]</span>
-                            <span class="task-text {% if task.done %}task-done{% endif %}">
+                        <li class="task-item {% if task.done %}done{% endif %}">
+                            <!-- Кликабельный чекбокс через скрытую форму -->
+                            <form method="POST" action="{{ url_for('toggle_task', task_id=task.id) }}" style="display: inline;">
+                                <button type="submit" class="checkbox-btn">
+                                    <span class="checkbox {% if task.done %}checked{% endif %}">
+                                        {% if task.done %}✓{% else %}○{% endif %}
+                                    </span>
+                                </button>
+                            </form>
+
+                            <span class="task-text">
                                 {{ task.text }}
                             </span>
                         </li>
