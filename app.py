@@ -47,33 +47,15 @@ def home():
     return render_template('index.html', calendar_html=calendar_html)
 
 # Маршрут страницы конкретного дня
-@app.route('/day/<date>', methods=['GET', 'POST'])
-def day_detail(date):
-    if request.method == 'POST':
-        # Получаем текст из формы
-        task_text = request.form.get('text', '').strip()
-
-        if task_text: # проверяем, что не пустая строка
-            new_task = Task(
-                date=date,
-                text=task_text.strip(),
-                done = False
-            )
-            db.session.add(new_task)
-            db.session.commit()
-            # После сохранения — редирект на ту же страницу (чтобы избежать повторной отправки формы)
-            return redirect(url_for('day_detail', date=date))
-        else:
-            # Можно добавить flash-сообщение об ошибке (позже)
-            print("Попытка добавить пустую задачу — игнорируем")
-
-    # GET-запрос или после редиректа — показываем страницу
+@app.route('/api/day/<date>')
+def api_day(date):
     tasks = Task.query.filter_by(date=date).all()
-    return render_template(
-        'day.html',
-        tasks=tasks,
-        date=date
-    )
+    diary = DiaryEntry.query.filter_by(date=date).first()
+
+    return {
+        "tasks": [{"id": t.id, "text": t.text, "done": t.done} for t in tasks],
+        "diary_notes": diary.notes if diary else ""
+    }
 
 @app.route('/toggle/<int:task_id>', methods = ['POST'])
 def toggle_task(task_id):

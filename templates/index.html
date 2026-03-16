@@ -4,68 +4,317 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ежедневник</title>
-
-    <!-- Временные стили для календаря -->
     <style>
+        * { box-sizing: border-box; }
         body {
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 20px;
-            background-color: #f8f9fa;
-            color: #333;
-            text-align: center;
+            background: #f0f2f5;
+            display: flex;
+            gap: 24px;
+            min-height: 100vh;
         }
-        h1 { color: #2c3e50; }
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
+        .left-panel {
+            width: 380px;
             background: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+            border-radius: 16px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+            padding: 24px;
+            overflow-y: auto;
+        }
+        .right-panel {
+            flex: 1;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+            padding: 28px;
+            display: flex;
+            flex-direction: column;
+            gap: 32px;
         }
 
-        /* Стили календаря */
-        .calendar {
+        .calendar-controls {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 16px;
+            align-items: center;
+        }
+        .calendar-controls select {
+            padding: 8px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 1rem;
+            flex: 1;
+        }
+        .calendar-header {
+            text-align: center;
+            font-size: 1.4rem;
+            margin-bottom: 12px;
+            font-weight: 600;
+            color: #1f2937;
+        }
+        table.calendar {
             width: 100%;
             border-collapse: collapse;
-            margin: 20px 0;
-            font-size: 1.1em;
+            font-size: 0.95rem;
         }
-        .calendar th, .calendar td {
-            border: 1px solid #ddd;
-            padding: 12px;
+        th, td {
+            padding: 10px;
             text-align: center;
+            border: 1px solid #e5e7eb;
         }
-        .calendar th {
-            background-color: #f2f2f2;
+        th {
+            background: #f3f4f6;
+            font-weight: 600;
+            color: #4b5563;
+        }
+        td a {
+            display: block;
+            padding: 8px;
+            border-radius: 50%;
+            text-decoration: none;
+            color: #111827;
+            transition: all 0.15s;
+        }
+        td a:hover {
+            background: #e0f2fe;
+        }
+        td.today a {
+            background: #dbeafe;
             font-weight: bold;
         }
-        .calendar td a {
-            text-decoration: none;
-            color: #333;
-            display: block;
-            padding: 10px;
+        td.selected a {
+            background: #3b82f6;
+            color: white;
+            font-weight: bold;
         }
-        .calendar td a:hover {
-            background-color: #e0f7fa;
+        td.empty {
+            background: #f9fafb;
+            color: #d1d5db;
+        }
+
+        h2 { margin: 0 0 16px 0; color: #1f2937; }
+        .task-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            background: #f9fafb;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            border-left: 4px solid #3b82f6;
+        }
+        .checkbox {
+            width: 28px;
+            height: 28px;
+            border: 2.5px solid #3b82f6;
             border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            cursor: pointer;
+            margin-right: 14px;
+            background: white;
+            transition: all 0.2s;
         }
-        .calendar td.empty {
-            background-color: #f9f9f9;
+        .checkbox.checked {
+            background: #3b82f6;
+            color: white;
+        }
+        .diary-section textarea {
+            width: 100%;
+            height: 320px;
+            padding: 14px;
+            border: 1px solid #d1d5db;
+            border-radius: 10px;
+            font-size: 1.05em;
+            resize: vertical;
+        }
+        .no-tasks {
+            color: #6b7280;
+            font-style: italic;
+            text-align: center;
+            padding: 40px 0;
         }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <h1>Ежедневник</h1>
-        <p>Выберите день, чтобы добавить задачи или записать мысли</p>
-
-        <!-- Здесь будет вставлен календарь из Python -->
-        {{ calendar_html | safe }}
-        <!-- | safe — важно! позволяет Flask вставить чистый HTML без экранирования -->
+    <!-- Левая панель — календарь -->
+    <div class="left-panel">
+        <div class="calendar-controls">
+            <select id="month-select"></select>
+            <select id="year-select"></select>
+        </div>
+        <div class="calendar-header" id="month-year">Март 2026</div>
+        <table class="calendar" id="calendar-table">
+            <thead>
+                <tr><th>Пн</th><th>Вт</th><th>Ср</th><th>Чт</th><th>Пт</th><th>Сб</th><th>Вс</th></tr>
+            </thead>
+            <tbody></tbody>
+        </table>
     </div>
 
+    <!-- Правая панель -->
+    <div class="right-panel">
+        <div class="tasks-section">
+            <h2>Задачи на <span id="selected-date">выберите день</span></h2>
+            <div id="tasks-list">
+                <p class="no-tasks">Выберите дату в календаре</p>
+            </div>
+        </div>
+
+        <div class="diary-section">
+            <h2>Дневник</h2>
+            <textarea id="diary-notes" placeholder="Ваши мысли, чувства, планы за день..."></textarea>
+            <button id="save-diary" style="margin-top:12px; padding:10px 20px; background:#3b82f6; color:white; border:none; border-radius:8px; cursor:pointer;">
+                Сохранить заметки
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Текущие значения
+        let currentYear = 2026;
+        let currentMonth = 3; // 1 = январь
+        let selectedDate = null;
+
+        // Заполняем выпадающие списки
+        function initSelectors() {
+            const monthSelect = document.getElementById('month-select');
+            const yearSelect = document.getElementById('year-select');
+
+            const months = [
+                'Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
+                'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'
+            ];
+            months.forEach((name, index) => {
+                const opt = document.createElement('option');
+                opt.value = index + 1;
+                opt.textContent = name;
+                if (index + 1 === currentMonth) opt.selected = true;
+                monthSelect.appendChild(opt);
+            });
+
+            for (let y = 2000; y <= 2035; y++) {
+                const opt = document.createElement('option');
+                opt.value = y;
+                opt.textContent = y;
+                if (y === currentYear) opt.selected = true;
+                yearSelect.appendChild(opt);
+            }
+        }
+
+        // Функция генерации календаря (аналог calendar.monthcalendar на JS)
+        function getMonthCalendar(year, month) {
+            const firstDay = new Date(year, month - 1, 1);
+            const lastDay = new Date(year, month, 0);
+            const daysInMonth = lastDay.getDate();
+            const startWeekday = (firstDay.getDay() + 6) % 7; // Пн = 0, Вс = 6
+
+            const weeks = [];
+            let week = Array(7).fill(0);
+            let day = 1;
+
+            // Заполняем первую неделю
+            for (let i = startWeekday; i < 7 && day <= daysInMonth; i++) {
+                week[i] = day++;
+            }
+            weeks.push(week);
+
+            // Остальные недели
+            while (day <= daysInMonth) {
+                week = Array(7).fill(0);
+                for (let i = 0; i < 7 && day <= daysInMonth; i++) {
+                    week[i] = day++;
+                }
+                weeks.push(week);
+            }
+
+            return weeks;
+        }
+
+        // Отрисовка календаря
+        function renderCalendar() {
+            const cal = getMonthCalendar(currentYear, currentMonth);
+            document.getElementById('month-year').textContent =
+                new Date(currentYear, currentMonth - 1, 1).toLocaleString('ru', { month: 'long', year: 'numeric' });
+
+            let html = '';
+            cal.forEach(week => {
+                html += '<tr>';
+                week.forEach(day => {
+                    if (day === 0) {
+                        html += '<td class="empty"></td>';
+                    } else {
+                        const dateStr = `${currentYear}-${String(currentMonth).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+                        let className = '';
+                        if (dateStr === selectedDate) className = 'selected';
+                        const today = new Date().toISOString().slice(0, 10);
+                        if (dateStr === today) className += ' today';
+                        html += `<td><a href="#" data-date="${dateStr}" class="${className.trim()}">${day}</a></td>`;
+                    }
+                });
+                html += '</tr>';
+            });
+
+            document.querySelector('#calendar-table tbody').innerHTML = html;
+
+            // Обработчик клика по дате
+            document.querySelectorAll('#calendar-table a').forEach(a => {
+                a.addEventListener('click', e => {
+                    e.preventDefault();
+                    selectedDate = a.dataset.date;
+                    document.getElementById('selected-date').textContent = selectedDate;
+                    loadDayData(selectedDate);
+                    renderCalendar(); // обновляем подсветку
+                });
+            });
+        }
+
+        // Загрузка данных дня (AJAX)
+        async function loadDayData(date) {
+            try {
+                const res = await fetch(`/api/day/${date}`);
+                if (!res.ok) throw new Error('Ошибка сервера');
+                const data = await res.json();
+
+                let html = '';
+                if (data.tasks.length === 0) {
+                    html = '<p class="no-tasks">Задач пока нет</p>';
+                } else {
+                    data.tasks.forEach(t => {
+                        html += `
+                            <div class="task-item ${t.done ? 'done' : ''}" data-task-id="${t.id}">
+                                <span class="checkbox ${t.done ? 'checked' : ''}">${t.done ? '✓' : '○'}</span>
+                                <span>${t.text}</span>
+                            </div>`;
+                    });
+                }
+                document.getElementById('tasks-list').innerHTML = html;
+
+                document.getElementById('diary-notes').value = data.diary_notes || '';
+            } catch (err) {
+                console.error(err);
+                document.getElementById('tasks-list').innerHTML = '<p class="no-tasks">Ошибка загрузки</p>';
+            }
+        }
+
+        // События
+        document.getElementById('month-select').addEventListener('change', e => {
+            currentMonth = parseInt(e.target.value);
+            renderCalendar();
+        });
+
+        document.getElementById('year-select').addEventListener('change', e => {
+            currentYear = parseInt(e.target.value);
+            renderCalendar();
+        });
+
+        // Запуск
+        initSelectors();
+        renderCalendar();
+    </script>
 </body>
 </html>
